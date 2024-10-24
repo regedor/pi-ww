@@ -18,9 +18,13 @@ class AttachmentsController < ApplicationController
 
     if @attachment.save
       redirect_to calendar_post_perspective_path(@calendar, @post, @perspective), notice: "Attachment was successfully created."
+
+      LogEntry.create_log("Attachment has been created by #{current_user.email}. [#{attachment_params}]")
     else
       error_messages = @attachment.errors.full_messages.join(", ")
       redirect_to calendar_post_perspective_path(@calendar, @post, @perspective),  alert: "Failed to create attachment: #{error_messages}"
+
+      LogEntry.create_log("#{current_user.email} attempted to create attachment but failed (error: #{error_messages}). [#{attachment_params}]")
     end
   end
 
@@ -38,8 +42,12 @@ class AttachmentsController < ApplicationController
   def update
     if @attachment.update(attachment_params)
       redirect_to calendar_post_perspective_path(@calendar, @post, @perspective), notice: "Attachment was successfully updated."
+      
+      LogEntry.create_log("Attachment has been updated by #{current_user.email}. [#{attachment_params}]")
     else
       render :edit, status: :unprocessable_entity
+
+      LogEntry.create_log("#{current_user.email} attempted to update attachment but failed (unprocessable_entity). [#{attachment_params}]")
     end
   end
 
@@ -47,6 +55,8 @@ class AttachmentsController < ApplicationController
   def destroy
     @attachment.destroy
     redirect_to calendar_post_perspective_path(@calendar, @post, @perspective), notice: "Attachment was successfully destroyed."
+
+    LogEntry.create_log("Attachment has been destroyed by #{current_user.email}. [#{attachment_params}]")
   end
 
   # GET /calendars/:calendar_id/posts/:post_id/perspectives/:perspective_id/attachments/:id/download
@@ -62,24 +72,32 @@ class AttachmentsController < ApplicationController
   def approved
     @attachment.update(status: "approved")
     redirect_to calendar_post_perspective_path(@calendar, @post, @perspective), notice: "Attachment status updated to Approved."
+
+    LogEntry.create_log("Attachment has been approved by #{current_user.email}. [#{attachment_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:post_id/perspectives/:perspective_id/attachments/:id/in_analysis
   def in_analysis
     @attachment.update(status: "in_analysis")
     redirect_to calendar_post_perspective_path(@calendar, @post, @perspective), notice: "Attachment status updated to In Analysis."
+
+    LogEntry.create_log("Attachment has been updated to In Analysis by #{current_user.email}. [#{attachment_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:post_id/perspectives/:perspective_id/attachments/:id/rejected
   def rejected
     @attachment.update(status: "rejected")
     redirect_to calendar_post_perspective_path(@calendar, @post, @perspective), notice: "Attachment status updated to Rejected."
+
+    LogEntry.create_log("Attachment has been rejected by #{current_user.email}. [#{attachment_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:post_id/perspectives/:perspective_id/attachments/:id/update_status
   def update_status
     @attachment.update(attachment_params_status)
     redirect_to calendar_post_perspective_path(@calendar, @post, @perspective), notice: "Attachment status updated."
+
+    LogEntry.create_log("Attachment status has been updated by #{current_user.email}. [#{attachment_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:post_id/perspectives/:perspective_id/attachments/:id/like
@@ -88,6 +106,8 @@ class AttachmentsController < ApplicationController
     @attachmentcounter.aproved = true
     @attachmentcounter.rejected = false
     save_counter(@attachmentcounter)
+
+    LogEntry.create_log("Attachment has been liked by #{current_user.email}. [#{attachment_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:post_id/perspectives/:perspective_id/attachments/:id/dislike
@@ -96,6 +116,8 @@ class AttachmentsController < ApplicationController
     @attachmentcounter.aproved = false
     @attachmentcounter.rejected = true
     save_counter(@attachmentcounter)
+
+    LogEntry.create_log("Attachment has been disliked by #{current_user.email}. [#{attachment_params}]")
   end
 
   private

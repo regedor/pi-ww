@@ -22,8 +22,12 @@ class CalendarsController < ApplicationController
 
     if @calendar.save
       redirect_to "/calendars", notice: "Calendar was successfully created."
+
+      LogEntry.create_log("Calendar has been created by #{current_user.email}. [#{calendar_params}]")
     else
       render :index, status: :unprocessable_entity
+
+      LogEntry.create_log("Failed to create calendar by #{current_user.email}. [#{calendar_params}]")
     end
   end
 
@@ -36,8 +40,12 @@ class CalendarsController < ApplicationController
     @calendar.organization = current_user.organization
     if @calendar.update(calendar_params)
       redirect_to "/calendars", notice: "Calendar was successfully updated."
+
+      LogEntry.create_log("Calendar has been updated by #{current_user.email}. [#{calendar_params}]")
     else
       render :edit, status: :unprocessable_entity
+
+      LogEntry.create_log("#{current_user.email} attempted to update calendar (unprocessable_entity). [#{calendar_params}]")
     end
   end
 
@@ -45,6 +53,8 @@ class CalendarsController < ApplicationController
   def destroy
     @calendar.destroy
     redirect_to calendars_url, notice: "Calendar was successfully destroyed."
+
+    LogEntry.create_log("Calendar has been destroyed by #{current_user.email}. [#{calendar_params}]")
   end
 
   def selector

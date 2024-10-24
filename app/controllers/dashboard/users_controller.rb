@@ -21,9 +21,13 @@ class Dashboard::UsersController < ApplicationController
         @user.send_reset_password_instructions
         format.html { redirect_to dashboard_user_path(@user), notice: "User was successfully created." }
         format.json { render :show, status: :created, location: @user }
+        
+        LogEntry.create_log("User #{@user.email} has been created by #{current_user.email}. [#{user_params}]")
       else
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @user.errors, status: :unprocessable_entity }
+
+        LogEntry.create_log("#{current_user.email} attempted to create a user but failed (inprocessable_entity). [#{user_params}]")
       end
     end
   end
@@ -36,9 +40,13 @@ class Dashboard::UsersController < ApplicationController
       if @user.update(user_params)
         format.html { redirect_to dashboard_user_path(@user), notice: "User was successfully updated." }
         format.json { render :show, status: :created, location: @user }
+
+        LogEntry.create_log("User #{@user.email} has been updated by #{current_user.email}. [#{user_params}\]")
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @user.errors, status: :unprocessable_entity }
+
+        LogEntry.create_log("#{current_user.email} attempted to update a user but failed (inprocessable_entity).[#{user_params}]")
       end
     end
   end
@@ -47,6 +55,8 @@ class Dashboard::UsersController < ApplicationController
     user = User.find(params[:id])
     user.destroy!
     redirect_to dashboard_path, notice: "User was successfully deleted."
+
+    LogEntry.create_log("User #{current_user.email} has been deleted by #{current_user.email}. [#{user_params}]")
   end
 
   private

@@ -29,8 +29,12 @@ class PostsController < ApplicationController
 
     if @post.save
       redirect_to calendar_post_path(@calendar, @post), notice: "Post was successfully created."
+
+      LogEntry.create_log("Post has been created by #{current_user.email}. [#{post_params}]")
     else
       render :new, status: :unprocessable_entity
+
+      LogEntry.create_log("#{current_user.email} attempted to create post but failed (unprocessable_entity). [#{post_params}]")
     end
   end
 
@@ -42,8 +46,12 @@ class PostsController < ApplicationController
   def update
     if @post.update(post_params)
       redirect_to calendar_post_path(@calendar, @post), notice: "Post was successfully updated."
+
+      LogEntry.create_log("Post has been updated by #{current_user.email}. [#{post_params}]")
     else
       render :edit, status: :unprocessable_entity
+
+      LogEntry.create_log("#{current_user.email} attempted to update post but failed (unprocessable_entity). [#{post_params}]")
     end
   end
 
@@ -51,24 +59,32 @@ class PostsController < ApplicationController
   def destroy
     @post.destroy
     redirect_to calendars_path(), notice: "Post was successfully deleted."
+
+    LogEntry.create_log("Post has been destroyed by #{current_user.email}. [#{post_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:id/approved
   def approved
     @post.update(status: "approved")
     redirect_to calendar_post_path(@calendar, @post), notice: "Post status updated to Approved."
+
+    LogEntry.create_log("Post has been approved by #{current_user.email}. [#{post_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:id/in_analysis
   def in_analysis
     @post.update(status: "in_analysis")
     redirect_to calendar_post_path(@calendar, @post), notice: "Post status updated to In Analysis."
+
+    LogEntry.create_log("Post has been updated to In Analysis by #{current_user.email}. [#{post_params}]")
   end
 
   # PATCH /calendars/:calendar_id/posts/:id/rejected
   def rejected
     @post.update(status: "rejected")
     redirect_to calendar_post_path(@calendar, @post), notice: "Post status updated to Rejected."
+
+    LogEntry.create_log("Post has been rejected by #{current_user.email}. [#{post_params}]")
   end
 
   private

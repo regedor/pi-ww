@@ -12,9 +12,13 @@ class CommentsController < ApplicationController
 
     if @comment.save
       redirect_back(fallback_location: calendar_post_path(@calendar, @post), notice: "Comment was successfully created.")
+
+      LogEntry.create_log("Comment has been created by #{current_user.email}. [#{comment_params}]")
     else
       error_messages = @comment.errors.full_messages.join(", ")
       redirect_back(fallback_location: calendar_post_path(@calendar, @post), alert: "Failed to create comment: #{error_messages}")
+
+      LogEntry.create_log("#{current_user.email} attempted to create comment but failed (error: #{error_messages}). [#{comment_params}]")
     end
   end
 
@@ -26,8 +30,12 @@ class CommentsController < ApplicationController
   def update
     if @comment.update(comment_params)
       redirect_to calendar_post_path(@calendar, @post), notice: "Comment was successfully updated."
+
+      LogEntry.create_log("Comment has been updated by #{current_user.email}. [#{comment_params}]")
     else
       render :edit, status: :unprocessable_entity
+
+      LogEntry.create_log("#{current_user.email} attempted to update comment but failed (unprocessable_entity). [#{comment_params}]")
     end
   end
 
@@ -35,6 +43,8 @@ class CommentsController < ApplicationController
   def destroy
     @comment.destroy
     redirect_back(fallback_location: calendar_post_path(@calendar, @post),  notice: "Comment was successfully deleted.")
+
+    LogEntry.create_log("Comment has been destroyed by #{current_user.email}. [#{comment_params}]")
   end
 
   private
